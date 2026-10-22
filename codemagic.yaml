@@ -1,0 +1,67 @@
+# Codemagic · Turkish Yolu · Android (Capacitor 7)
+# android-test    — debug APK for installing directly on a phone (no keys needed).
+# android-release — signed AAB for Google Play + signed APK. Needs the keystore uploaded once:
+#                   Teams → Code signing identities → Android keystores → reference name "turkish_yolu_keystore".
+workflows:
+  android-test:
+    name: Turkish Yolu · Android APK (тест)
+    instance_type: linux_x2
+    max_build_duration: 45
+    environment:
+      node: 20
+      java: 21
+    triggering:
+      events: [push]
+      branch_patterns:
+        - pattern: main
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Build web bundle
+        script: node build.js
+      - name: Add Android platform, icons and splash
+        script: |
+          npx cap add android
+          npx @capacitor/assets generate --android --iconBackgroundColor '#1F5FAE' --splashBackgroundColor '#1A4E8F' --splashBackgroundColorDark '#1A4E8F'
+          npx cap sync android
+      - name: Version, signing, portrait
+        script: node android-setup.js
+      - name: Build debug APK
+        script: |
+          cd android && chmod +x gradlew
+          ./gradlew assembleDebug
+    artifacts:
+      - android/app/build/outputs/**/*.apk
+
+  android-release:
+    name: Turkish Yolu · Android для Google Play
+    instance_type: linux_x2
+    max_build_duration: 45
+    environment:
+      node: 20
+      java: 21
+      android_signing:
+        - turkish_yolu_keystore
+      vars:
+        APP_VERSION: 1.0.0
+    triggering:
+      events: []
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Build web bundle
+        script: node build.js
+      - name: Add Android platform, icons and splash
+        script: |
+          npx cap add android
+          npx @capacitor/assets generate --android --iconBackgroundColor '#1F5FAE' --splashBackgroundColor '#1A4E8F' --splashBackgroundColorDark '#1A4E8F'
+          npx cap sync android
+      - name: Version, signing, portrait
+        script: node android-setup.js
+      - name: Build signed AAB and APK
+        script: |
+          cd android && chmod +x gradlew
+          ./gradlew bundleRelease assembleRelease
+    artifacts:
+      - android/app/build/outputs/**/*.aab
+      - android/app/build/outputs/**/*.apk

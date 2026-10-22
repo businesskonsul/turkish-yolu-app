@@ -1,0 +1,11 @@
+{
+  "appId": "com.turkishyolu.app",
+  "appName": "Turkish Yolu",
+  "webDir": "www",
+  "backgroundColor": "#FFF3E0",
+  "android": { "backgroundColor": "#FFF3E0", "allowMixedContent": false },
+  "plugins": {
+    "SplashScreen": { "launchShowDuration": 3000, "launchAutoHide": false, "backgroundColor": "#1A4E8F", "showSpinner": false, "androidScaleType": "CENTER_CROP" },
+    "LocalNotifications": { "iconColor": "#E8590C" }
+  }
+}
